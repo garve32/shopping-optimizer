@@ -1,46 +1,857 @@
 <!doctype html>
-
-<html>
+<html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <title>HTML Example</title>
-  
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/about.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>쇼핑 실질가 계산기</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --soft: #f0f4f8;
+      --line: #d7dee7;
+      --text: #17202e;
+      --muted: #667386;
+      --blue: #2367d1;
+      --blue-soft: #e8f0ff;
+      --green: #12805c;
+      --green-soft: #e6f5ef;
+      --red: #c84d58;
+      --red-soft: #ffedf0;
+      --amber: #9a6700;
+      --amber-soft: #fff3d8;
+      --shadow: 0 10px 28px rgba(30, 41, 59, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family:
+              "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Segoe UI",
+              Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    input,
+    button {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1040px, 100%);
+      margin: 0 auto;
+      padding: 10px 8px 22px;
+    }
+
+    .top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(22px, 7vw, 32px);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .sub {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .reset {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 12px;
+      background: var(--card);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .layout {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .result {
+      order: -1;
+      padding: 2px 0 0;
+    }
+
+    .inputs {
+      display: grid;
+      gap: 10px;
+    }
+
+    .section-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.25;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 99px;
+      background: var(--blue);
+    }
+
+    .dot.green {
+      background: var(--green);
+    }
+
+    .badge,
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 26px;
+      border-radius: 999px;
+      padding: 3px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .badge {
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    .badge.good,
+    .tag.green {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .badge.bad {
+      background: var(--red-soft);
+      color: var(--red);
+    }
+
+    .badge.neutral {
+      background: var(--amber-soft);
+      color: var(--amber);
+    }
+
+    .tag {
+      border: 1px solid var(--line);
+      background: var(--soft);
+      color: var(--muted);
+    }
+
+    .field-grid,
+    .compact-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .compact-row.naver {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.82fr);
+    }
+
+    .compact-row.gmarket {
+      grid-template-columns: minmax(0, 1fr) 86px;
+    }
+
+    .compact-row.card {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .field {
+      display: grid;
+      gap: 4px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .money,
+    .percent {
+      position: relative;
+    }
+
+    .money::before,
+    .percent::after {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 950;
+      pointer-events: none;
+    }
+
+    .money::before {
+      content: "₩";
+      left: 11px;
+    }
+
+    .percent::after {
+      content: "%";
+      right: 11px;
+    }
+
+    input {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 11px;
+      background: #fff;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 850;
+      outline: none;
+    }
+
+    .money input {
+      padding-left: 31px;
+    }
+
+    .percent input {
+      padding-right: 31px;
+    }
+
+    input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(35, 103, 209, 0.13);
+    }
+
+    .headline {
+      margin: 8px 0 0;
+      font-size: clamp(21px, 7vw, 34px);
+      line-height: 1.08;
+      font-weight: 950;
+      letter-spacing: 0;
+    }
+
+    .detail {
+      display: none;
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .price-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 10px;
+      background: #fff;
+    }
+
+    .price-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .price-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .price {
+      margin-top: 3px;
+      font-size: clamp(21px, 6.6vw, 29px);
+      line-height: 1.08;
+      font-weight: 950;
+    }
+
+    .formula {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+      line-height: 1.38;
+      word-break: keep-all;
+    }
+
+    .summary-grid,
+    .metric-grid {
+      display: grid;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 7px 9px;
+      background: #fff;
+    }
+
+    .row span {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .row strong {
+      text-align: right;
+      font-size: 14px;
+    }
+
+    .metric-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .metric-grid .row {
+      grid-template-columns: 1fr;
+      align-content: start;
+    }
+
+    .metric-grid .row strong {
+      text-align: left;
+    }
+
+    .note {
+      margin-top: 10px;
+      border-left: 3px solid var(--blue);
+      padding-left: 9px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    @media (min-width: 560px) {
+      .field-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .compare {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 880px) {
+      .app {
+        padding: 20px 16px 34px;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 360px;
+        align-items: start;
+      }
+
+      .result {
+        order: 0;
+        position: sticky;
+        top: 16px;
+      }
+
+      .inputs {
+        order: 0;
+      }
+
+      .compare {
+        grid-template-columns: 1fr;
+      }
+
+      .detail {
+        display: block;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .top {
+        grid-template-columns: 1fr;
+      }
+
+      .reset {
+        width: 100%;
+      }
+
+      .compact-row.card {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-  <section class="center">
-    <aside class="sidebar"></aside>
-    
-    <section class="contents">
-      <!-- page will be include here -->
-      <section id="page" class="page">
-        <section id="about">
-          <section class="frame">
-            <h2><b>HELLO</b>WORLD</h2>
-            
-            <div class="cat">
-              <div class="picture">
-                <img src="images/mew.png" alt="Mew">
-              </div>
-              <small>Mew</small>
+<main class="app">
+  <header class="top">
+    <div>
+      <h1>쇼핑 실질가 계산기</h1>
+      <p class="sub">네이버 실적 인정과 지마켓 할인을 한 번에 비교합니다.</p>
+    </div>
+    <button class="reset" id="resetButton" type="button">초기화</button>
+  </header>
+
+  <div class="layout">
+    <section class="inputs" aria-label="입력">
+      <section class="section-card">
+        <div class="section-head">
+          <h2 class="section-title"><span class="dot"></span>네이버</h2>
+          <span class="tag green">실적 인정</span>
+        </div>
+        <div class="compact-row naver">
+          <div class="field">
+            <label for="naverPrice">상품금액</label>
+            <div class="money">
+              <input
+                      id="naverPrice"
+                      data-money
+                      type="text"
+                      inputmode="numeric"
+                      autocomplete="off"
+                      placeholder="예: 17,700"
+              />
             </div>
-            <div class="cat">
-              <div class="picture">
-                <img src="images/siesta.png" alt="Siesta">
-              </div>
-              <small>Siesta</small>
+          </div>
+
+          <div class="field">
+            <label for="naverPoint">적립포인트</label>
+            <div class="money">
+              <input
+                      id="naverPoint"
+                      data-money
+                      type="text"
+                      inputmode="numeric"
+                      autocomplete="off"
+                      value="0"
+              />
             </div>
-            <div class="cat">
-              <div class="picture">
-                <img src="images/tiger.png" alt="Tiger">
-              </div>
-              <small>Tiger</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="section-head">
+          <h2 class="section-title"><span class="dot"></span>지마켓</h2>
+          <span class="tag">실적 제외</span>
+        </div>
+        <div class="compact-row gmarket">
+          <div class="field">
+            <label for="gmarketPrice">상품금액</label>
+            <div class="money">
+              <input
+                      id="gmarketPrice"
+                      data-money
+                      type="text"
+                      inputmode="numeric"
+                      autocomplete="off"
+                      placeholder="예: 14,500"
+              />
             </div>
-          </section>
-        </section>
+          </div>
+
+          <div class="field">
+            <label for="gmarketDiscount">할인율</label>
+            <div class="percent">
+              <input
+                      id="gmarketDiscount"
+                      data-percent
+                      type="text"
+                      inputmode="decimal"
+                      autocomplete="off"
+                      value="10"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="section-head">
+          <h2 class="section-title"><span class="dot green"></span>카드</h2>
+        </div>
+        <div class="compact-row card">
+          <div class="field">
+            <label for="cardTarget">실적 기준</label>
+            <div class="money">
+              <input
+                      id="cardTarget"
+                      data-money
+                      type="text"
+                      inputmode="numeric"
+                      autocomplete="off"
+                      value="300,000"
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="cardRefund">환급액</label>
+            <div class="money">
+              <input
+                      id="cardRefund"
+                      data-money
+                      type="text"
+                      inputmode="numeric"
+                      autocomplete="off"
+                      value="12,000"
+              />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="remainingSpend">남은 실적</label>
+            <div class="money">
+              <input
+                      id="remainingSpend"
+                      data-money
+                      type="text"
+                      inputmode="numeric"
+                      autocomplete="off"
+                      value="300,000"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-card">
+        <div class="section-head">
+          <h2 class="section-title"><span class="dot"></span>카드 계산</h2>
+        </div>
+        <div class="metric-grid">
+          <div class="row">
+            <span>피킹률</span>
+            <strong id="pickingRate">4%</strong>
+          </div>
+          <div class="row">
+            <span>반영 실적</span>
+            <strong id="performanceStatus">₩0</strong>
+          </div>
+          <div class="row">
+            <span>카드피킹</span>
+            <strong id="cardValue">₩0</strong>
+          </div>
+        </div>
       </section>
     </section>
-  </section>
+
+    <aside class="result" aria-label="결과">
+      <div class="badge" id="winnerBadge">가격 입력 필요</div>
+      <div class="headline" id="headline">가격을 입력하면 비교합니다.</div>
+      <p class="detail" id="headlineDetail">
+        네이버 실질가와 지마켓 할인 적용가를 비교합니다.
+      </p>
+
+      <div class="compare">
+        <article class="price-card">
+          <div class="price-head">
+            <span class="price-label">네이버 실질가</span>
+            <span class="tag green">실적 인정</span>
+          </div>
+          <div class="price" id="naverNet">₩0</div>
+          <div class="formula" id="naverFormula">
+            상품금액 ₩0 - 적립 ₩0 - 카드피킹 ₩0
+          </div>
+        </article>
+
+        <article class="price-card">
+          <div class="price-head">
+            <span class="price-label">지마켓 할인 적용가</span>
+            <span class="tag">실적 제외</span>
+          </div>
+          <div class="price" id="gmarketNet">₩0</div>
+          <div class="formula" id="gmarketFormula">
+            상품금액 ₩0 - 즉시할인 ₩0
+          </div>
+        </article>
+      </div>
+
+      <div class="summary-grid">
+        <div class="row">
+          <span>차이</span>
+          <strong id="diffAmount">₩0</strong>
+        </div>
+        <div class="row">
+          <span>구매 후 남은 실적</span>
+          <strong id="remainingAfter">₩0</strong>
+        </div>
+      </div>
+
+      <div class="note" id="note">
+        네이버 상품금액과 현재 남은 실적 중 작은 금액에 피킹률을 적용합니다.
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script>
+  const STORAGE_KEY = "shopping-effective-price:v2";
+  const ids = [
+    "naverPrice",
+    "naverPoint",
+    "gmarketPrice",
+    "gmarketDiscount",
+    "cardTarget",
+    "cardRefund",
+    "remainingSpend",
+  ];
+
+  const els = Object.fromEntries(
+          [
+            ...ids,
+            "resetButton",
+            "pickingRate",
+            "performanceStatus",
+            "cardValue",
+            "winnerBadge",
+            "headline",
+            "headlineDetail",
+            "naverNet",
+            "naverFormula",
+            "gmarketNet",
+            "gmarketFormula",
+            "diffAmount",
+            "remainingAfter",
+            "note",
+          ].map((id) => [id, document.getElementById(id)]),
+  );
+
+  const won = new Intl.NumberFormat("ko-KR", {
+    style: "currency",
+    currency: "KRW",
+    maximumFractionDigits: 0,
+  });
+
+  function parseMoney(value) {
+    const number = Number(String(value).replace(/[^\d.-]/g, ""));
+    return Number.isFinite(number) ? Math.max(0, number) : 0;
+  }
+
+  function parsePercent(value) {
+    const number = Number(String(value).replace(/[^\d.-]/g, ""));
+    if (!Number.isFinite(number)) return 0;
+    return Math.min(100, Math.max(0, number));
+  }
+
+  function formatWon(value) {
+    return won.format(Math.round(value || 0));
+  }
+
+  function formatRate(value) {
+    if (!Number.isFinite(value) || value <= 0) return "0%";
+    return `${value.toFixed(value >= 10 ? 1 : 2)}%`;
+  }
+
+  function readValues() {
+    const naverPrice = parseMoney(els.naverPrice.value);
+    const naverPoint = Math.min(parseMoney(els.naverPoint.value), naverPrice);
+    const gmarketPrice = parseMoney(els.gmarketPrice.value);
+    const gmarketDiscountRate = parsePercent(els.gmarketDiscount.value);
+    const cardTarget = parseMoney(els.cardTarget.value);
+    const cardRefund = parseMoney(els.cardRefund.value);
+    const remainingSpend = Math.min(
+            parseMoney(els.remainingSpend.value),
+            cardTarget || Number.POSITIVE_INFINITY,
+    );
+    const pickingRate = cardTarget > 0 ? cardRefund / cardTarget : 0;
+    const performanceBase = Math.min(naverPrice, remainingSpend);
+    const cardValue = performanceBase * pickingRate;
+    const naverNet = Math.max(0, naverPrice - naverPoint - cardValue);
+    const gmarketDiscountAmount = gmarketPrice * (gmarketDiscountRate / 100);
+    const gmarketNet = Math.max(0, gmarketPrice - gmarketDiscountAmount);
+    const remainingAfter = Math.max(0, remainingSpend - naverPrice);
+
+    return {
+      naverPrice,
+      naverPoint,
+      gmarketPrice,
+      gmarketDiscountRate,
+      cardTarget,
+      cardRefund,
+      remainingSpend,
+      pickingRate,
+      performanceBase,
+      cardValue,
+      naverNet,
+      gmarketDiscountAmount,
+      gmarketNet,
+      remainingAfter,
+      hasPrices: naverPrice > 0 && gmarketPrice > 0,
+      hasCard: cardTarget > 0 && cardRefund > 0,
+    };
+  }
+
+  function render() {
+    const data = readValues();
+    const diff = data.naverNet - data.gmarketNet;
+
+    els.pickingRate.textContent = formatRate(data.pickingRate * 100);
+    els.performanceStatus.textContent = formatWon(data.performanceBase);
+    els.cardValue.textContent = formatWon(data.cardValue);
+    els.naverNet.textContent = formatWon(data.naverNet);
+    els.naverFormula.textContent = `상품금액 ${formatWon(
+            data.naverPrice,
+    )} - 적립 ${formatWon(data.naverPoint)} - 카드피킹 ${formatWon(
+            data.cardValue,
+    )}`;
+    els.gmarketNet.textContent = formatWon(data.gmarketNet);
+    els.gmarketFormula.textContent = `상품금액 ${formatWon(
+            data.gmarketPrice,
+    )} - 즉시할인 ${formatWon(data.gmarketDiscountAmount)} (${formatRate(
+            data.gmarketDiscountRate,
+    )})`;
+    els.diffAmount.textContent = formatWon(Math.abs(diff));
+    els.remainingAfter.textContent = formatWon(data.remainingAfter);
+    els.winnerBadge.className = "badge";
+
+    if (!data.hasPrices) {
+      els.winnerBadge.textContent = "가격 입력 필요";
+      els.headline.textContent = "가격을 입력하면 비교합니다.";
+      els.headlineDetail.textContent =
+              "네이버 상품금액과 지마켓 상품금액을 모두 입력하세요.";
+      els.note.textContent =
+              "네이버 상품금액과 현재 남은 실적 중 작은 금액에 피킹률을 적용합니다.";
+      save();
+      return;
+    }
+
+    if (diff < 0) {
+      els.winnerBadge.classList.add("good");
+      els.winnerBadge.textContent = "네이버 유리";
+      els.headline.textContent = `네이버가 ${formatWon(Math.abs(diff))} 이득`;
+    } else if (diff > 0) {
+      els.winnerBadge.classList.add("bad");
+      els.winnerBadge.textContent = "지마켓 유리";
+      els.headline.textContent = `지마켓이 ${formatWon(diff)} 이득`;
+    } else {
+      els.winnerBadge.classList.add("neutral");
+      els.winnerBadge.textContent = "동일";
+      els.headline.textContent = "실질가가 같습니다.";
+    }
+
+    els.headlineDetail.textContent = `네이버 ${formatWon(
+            data.naverNet,
+    )} vs 지마켓 ${formatWon(data.gmarketNet)}`;
+
+    if (!data.hasCard) {
+      els.note.textContent =
+              "카드 실적 기준이나 환급액이 없어서 카드피킹을 0원으로 계산했습니다.";
+    } else if (data.performanceBase > 0) {
+      els.note.textContent = `네이버 상품금액 중 ${formatWon(
+              data.performanceBase,
+      )}을 실적 기여분으로 보고 카드피킹 ${formatWon(
+              data.cardValue,
+      )}를 반영했습니다.`;
+    } else {
+      els.note.textContent =
+              "네이버 상품금액이나 현재 남은 실적이 0원이라 카드피킹은 0원입니다.";
+    }
+
+    save();
+  }
+
+  function normalizeMoney(input) {
+    if (input.value.trim() === "") return;
+    input.value = parseMoney(input.value).toLocaleString("ko-KR");
+  }
+
+  function normalizePercent(input) {
+    input.value =
+            input.value.trim() === "" ? "10" : String(parsePercent(input.value));
+  }
+
+  function save() {
+    const values = Object.fromEntries(ids.map((id) => [id, els[id].value]));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+  }
+
+  function restore() {
+    try {
+      const values = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      if (!values) return;
+      ids.forEach((id) => {
+        if (typeof values[id] === "string") els[id].value = values[id];
+      });
+    } catch {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }
+
+  document.querySelectorAll("input").forEach((input) => {
+    input.addEventListener("input", render);
+  });
+
+  document.querySelectorAll("[data-money]").forEach((input) => {
+    input.addEventListener("blur", () => {
+      normalizeMoney(input);
+      render();
+    });
+  });
+
+  document.querySelectorAll("[data-percent]").forEach((input) => {
+    input.addEventListener("blur", () => {
+      normalizePercent(input);
+      render();
+    });
+  });
+
+  els.resetButton.addEventListener("click", () => {
+    localStorage.removeItem(STORAGE_KEY);
+    els.naverPrice.value = "";
+    els.naverPoint.value = "0";
+    els.gmarketPrice.value = "";
+    els.gmarketDiscount.value = "10";
+    els.cardTarget.value = "300,000";
+    els.cardRefund.value = "12,000";
+    els.remainingSpend.value = "300,000";
+    render();
+  });
+
+  restore();
+  render();
+</script>
 </body>
 </html>
