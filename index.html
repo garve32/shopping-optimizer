@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>네이버 vs 지마켓 비교</title>
+  <title>쇼핑 옵티마이저</title>
   <style>
     :root {
       --bg: #f4f6f8;
@@ -16,8 +16,6 @@
       --blue-soft: #e8f0ff;
       --green: #12805c;
       --green-soft: #e6f5ef;
-      --red: #c84d58;
-      --red-soft: #ffedf0;
       --amber: #9a6700;
       --amber-soft: #fff3d8;
       --shadow: 0 10px 28px rgba(30, 41, 59, 0.08);
@@ -147,11 +145,6 @@
       color: var(--green);
     }
 
-    .badge.bad {
-      background: var(--red-soft);
-      color: var(--red);
-    }
-
     .badge.neutral {
       background: var(--amber-soft);
       color: var(--amber);
@@ -192,8 +185,7 @@
 
     .compact-row.card input {
       padding-left: 24px;
-      padding-right: 6px;
-      font-size: 13px;
+      padding-right: 4px;
     }
 
     .field {
@@ -235,13 +227,13 @@
 
     input {
       width: 100%;
-      min-height: 38px;
+      min-height: 40px;
       border: 1px solid var(--line);
       border-radius: 8px;
       padding: 8px 10px;
       background: #fff;
       color: var(--text);
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 850;
       outline: none;
     }
@@ -265,12 +257,10 @@
       opacity: 1;
     }
 
-    .headline {
-      margin: 5px 0 0;
-      font-size: 20px;
-      line-height: 1.12;
-      font-weight: 950;
-      letter-spacing: 0;
+    .result .badge {
+      min-height: 26px;
+      padding: 4px 10px;
+      font-size: 12px;
     }
 
     .compare {
@@ -285,6 +275,17 @@
       border-radius: 8px;
       padding: 7px 8px;
       background: #fff;
+    }
+
+    .price-card.best {
+      border-color: var(--green);
+      background: var(--green-soft);
+      box-shadow: 0 0 0 2px rgba(18, 128, 92, 0.12);
+    }
+
+    .price-card.best .price-label,
+    .price-card.best .price {
+      color: var(--green);
     }
 
     .price-label {
@@ -353,17 +354,16 @@
 <body>
 <main class="app">
   <header class="top">
-    <h1>네이버 vs 지마켓 비교</h1>
+    <h1>쇼핑 옵티마이저</h1>
     <button class="reset" id="resetButton" type="button">초기화</button>
   </header>
 
   <div class="layout">
     <aside class="result" aria-label="결과">
       <div class="badge" id="winnerBadge">가격 입력 필요</div>
-      <div class="headline" id="headline">가격을 입력하면 비교합니다.</div>
 
       <div class="compare">
-        <article class="price-card">
+        <article class="price-card" id="naverCard">
           <span class="price-label">네이버 실질가</span>
           <div class="price" id="naverNet">₩0</div>
           <div class="formula" id="naverFormula">
@@ -371,7 +371,7 @@
           </div>
         </article>
 
-        <article class="price-card">
+        <article class="price-card" id="gmarketCard">
           <span class="price-label">지마켓 할인 적용가</span>
           <div class="price" id="gmarketNet">₩0</div>
           <div class="formula" id="gmarketFormula">
@@ -502,12 +502,7 @@
             </div>
           </div>
         </div>
-      </section>
 
-      <section class="section-card">
-        <div class="section-head">
-          <h2 class="section-title"><span class="dot"></span>카드 계산</h2>
-        </div>
         <div class="metric-grid">
           <div class="row">
             <span>피킹률</span>
@@ -548,7 +543,8 @@
             "performanceStatus",
             "cardValue",
             "winnerBadge",
-            "headline",
+            "naverCard",
+            "gmarketCard",
             "naverNet",
             "naverFormula",
             "gmarketNet",
@@ -636,26 +632,26 @@
             data.gmarketDiscountRate,
     )})`;
     els.winnerBadge.className = "badge";
+    els.naverCard.classList.remove("best");
+    els.gmarketCard.classList.remove("best");
 
     if (!data.hasPrices) {
       els.winnerBadge.textContent = "가격 입력 필요";
-      els.headline.textContent = "가격을 입력하면 비교합니다.";
       save();
       return;
     }
 
     if (diff < 0) {
       els.winnerBadge.classList.add("good");
-      els.winnerBadge.textContent = "네이버 유리";
-      els.headline.textContent = `네이버가 ${formatWon(Math.abs(diff))} 이득`;
+      els.winnerBadge.textContent = `네이버가 ${formatWon(Math.abs(diff))} 이득`;
+      els.naverCard.classList.add("best");
     } else if (diff > 0) {
-      els.winnerBadge.classList.add("bad");
-      els.winnerBadge.textContent = "지마켓 유리";
-      els.headline.textContent = `지마켓이 ${formatWon(diff)} 이득`;
+      els.winnerBadge.classList.add("good");
+      els.winnerBadge.textContent = `지마켓이 ${formatWon(diff)} 이득`;
+      els.gmarketCard.classList.add("best");
     } else {
       els.winnerBadge.classList.add("neutral");
-      els.winnerBadge.textContent = "동일";
-      els.headline.textContent = "실질가가 같습니다.";
+      els.winnerBadge.textContent = "실질가 동일";
     }
 
     save();
