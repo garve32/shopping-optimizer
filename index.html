@@ -139,13 +139,13 @@
       color: var(--blue);
     }
 
-    .badge.good,
+    .badge[data-result="good"],
     .tag.green {
       background: var(--green-soft);
       color: var(--green);
     }
 
-    .badge.neutral {
+    .badge[data-result="neutral"] {
       background: var(--amber-soft);
       color: var(--amber);
     }
@@ -277,14 +277,14 @@
       background: #fff;
     }
 
-    .price-card.best {
+    .price-card[aria-current="true"] {
       border-color: var(--green);
       background: var(--green-soft);
       box-shadow: 0 0 0 2px rgba(18, 128, 92, 0.12);
     }
 
-    .price-card.best .price-label,
-    .price-card.best .price {
+    .price-card[aria-current="true"] .price-label,
+    .price-card[aria-current="true"] .price {
       color: var(--green);
     }
 
@@ -360,10 +360,10 @@
 
   <div class="layout">
     <aside class="result" aria-label="결과">
-      <div class="badge" id="winnerBadge">가격 입력 필요</div>
+      <div class="badge" id="winnerBadge" data-result="idle">가격 입력 필요</div>
 
       <div class="compare">
-        <article class="price-card" id="naverCard">
+        <article class="price-card" id="naverCard" aria-current="false">
           <span class="price-label">네이버 실질가</span>
           <div class="price" id="naverNet">₩0</div>
           <div class="formula" id="naverFormula">
@@ -371,7 +371,7 @@
           </div>
         </article>
 
-        <article class="price-card" id="gmarketCard">
+        <article class="price-card" id="gmarketCard" aria-current="false">
           <span class="price-label">지마켓 할인 적용가</span>
           <div class="price" id="gmarketNet">₩0</div>
           <div class="formula" id="gmarketFormula">
@@ -631,9 +631,9 @@
     )} - 즉시할인 ${formatWon(data.gmarketDiscountAmount)} (${formatRate(
             data.gmarketDiscountRate,
     )})`;
-    els.winnerBadge.className = "badge";
-    els.naverCard.classList.remove("best");
-    els.gmarketCard.classList.remove("best");
+    els.winnerBadge.dataset.result = "idle";
+    els.naverCard.setAttribute("aria-current", "false");
+    els.gmarketCard.setAttribute("aria-current", "false");
 
     if (!data.hasPrices) {
       els.winnerBadge.textContent = "가격 입력 필요";
@@ -642,15 +642,15 @@
     }
 
     if (diff < 0) {
-      els.winnerBadge.classList.add("good");
+      els.winnerBadge.dataset.result = "good";
       els.winnerBadge.textContent = `네이버가 ${formatWon(Math.abs(diff))} 이득`;
-      els.naverCard.classList.add("best");
+      els.naverCard.setAttribute("aria-current", "true");
     } else if (diff > 0) {
-      els.winnerBadge.classList.add("good");
+      els.winnerBadge.dataset.result = "good";
       els.winnerBadge.textContent = `지마켓이 ${formatWon(diff)} 이득`;
-      els.gmarketCard.classList.add("best");
+      els.gmarketCard.setAttribute("aria-current", "true");
     } else {
-      els.winnerBadge.classList.add("neutral");
+      els.winnerBadge.dataset.result = "neutral";
       els.winnerBadge.textContent = "실질가 동일";
     }
 
@@ -684,7 +684,12 @@
     }
   }
 
+  function selectAll(input) {
+    requestAnimationFrame(() => input.select());
+  }
+
   document.querySelectorAll("input").forEach((input) => {
+    input.addEventListener("focus", () => selectAll(input));
     input.addEventListener("input", render);
   });
 
